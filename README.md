@@ -1,26 +1,25 @@
 # Web Audit Tool
 
-A full-stack website audit tool that analyzes SEO and security issues of public websites.
+A full-stack website audit tool that analyzes **SEO, Security, Performance, and Accessibility** of public websites.
 
-## Tech Stack
-- Vanilla JavaScript
-- Cloudflare Pages
-- Cloudflare Workers
-- GitHub
+## 🚀 Live Demo
 
-## Features
-- SEO checks (title, meta description)
-- Security header analysis
-- Secure backend URL fetching
-- Rate limiting
-- Hidden backend logic
-
-## Live Demo
 👉 https://web-audit-tool.pages.dev/
 
-## Architecture
-Frontend is served via Cloudflare Pages.  
-API requests to `/api/audit` are proxied to a Cloudflare Worker.
+## 🧠 Features
 
-## Why this project
-Built to demonstrate real-world full-stack architecture, security, and performance.
+- SEO checks (title, meta description, headings)
+- Security header analysis
+- Performance heuristics
+- Accessibility checks
+- Distributed caching (Cloudflare KV)
+- Audit history (Cloudflare D1)
+- Admin-only dashboard
+- Global deployment
+
+## 🏗️ Architecture
+
+- **Frontend:** Vanilla JavaScript + Cloudflare Pages
+- **Backend:** Cloudflare Worker
+- **Database:** Cloudflare D1
+- **Cache:** Cloudflare KV

@@ -39,6 +39,20 @@ runBtn.addEventListener("click", async () => {
     setRing(document.getElementById("seoRing"), data.scores.seo);
     setRing(document.getElementById("securityRing"), data.scores.security);
 
+    document.getElementById("performanceScore").textContent =
+      data.scores.performance;
+    document.getElementById("accessibilityScore").textContent =
+      data.scores.accessibility;
+
+    setRing(
+      document.getElementById("performanceRing"),
+      data.scores.performance
+    );
+    setRing(
+      document.getElementById("accessibilityRing"),
+      data.scores.accessibility
+    );
+
     status.textContent = data.cached ? "⚡ Served from cache" : "Fresh audit";
 
     issuesList.innerHTML = "";
