@@ -1,3 +1,81 @@
+function auditPerformance(html, responseTime, issues) {
+	let score = 100;
+
+	const scriptCount = (html.match(/<script/gi) || []).length;
+	const cssCount = (html.match(/<link[^>]*rel=["']stylesheet["']/gi) || []).length;
+
+	if (responseTime > 2000) {
+		score -= 30;
+		issues.push({
+			type: 'Performance',
+			message: 'Slow server response time (>2s)',
+		});
+	}
+
+	if (scriptCount > 10) {
+		score -= 20;
+		issues.push({
+			type: 'Performance',
+			message: 'Too many JavaScript files',
+		});
+	}
+
+	if (cssCount > 5) {
+		score -= 15;
+		issues.push({
+			type: 'Performance',
+			message: 'Too many CSS files',
+		});
+	}
+
+	if (html.length > 500 * 1024) {
+		score -= 20;
+		issues.push({
+			type: 'Performance',
+			message: 'Large HTML size',
+		});
+	}
+
+	return Math.max(score, 0);
+}
+
+function auditAccessibility(html, issues) {
+	let score = 100;
+
+	// Missing lang attribute
+	if (!html.includes('<html') || !html.includes('lang=')) {
+		score -= 20;
+		issues.push({
+			type: 'Accessibility',
+			message: 'Missing lang attribute on <html>',
+		});
+	}
+
+	// Images without alt
+	const imagesWithoutAlt = (html.match(/<img(?![^>]*alt=)/gi) || []).length;
+
+	if (imagesWithoutAlt > 0) {
+		score -= 20;
+		issues.push({
+			type: 'Accessibility',
+			message: 'Images missing alt attributes',
+		});
+	}
+
+	// Inputs without labels / aria-label
+	const inputsWithoutLabel = (html.match(/<input(?![^>]*(aria-label|aria-labelledby|id)=)/gi) || []).length;
+
+	if (inputsWithoutLabel > 0) {
+		score -= 20;
+		issues.push({
+			type: 'Accessibility',
+			message: 'Inputs without accessible labels',
+		});
+	}
+
+	return Math.max(score, 0);
+}
+
 const RATE_LIMIT = new Map();
 
 function isRateLimited(ip) {
@@ -52,9 +130,7 @@ export default {
 
 		// Handle CORS preflight
 		if (request.method === 'OPTIONS') {
-			return new Response(null, {
-				headers: corsHeaders(),
-			});
+			return new Response(null, { headers: corsHeaders() });
 		}
 
 		if (request.method !== 'POST') {
@@ -84,7 +160,9 @@ export default {
 		const controller = new AbortController();
 		const timeout = setTimeout(() => controller.abort(), 8000);
 
+		const startTime = Date.now();
 		let response;
+
 		try {
 			response = await fetch(url, {
 				redirect: 'follow',
@@ -96,6 +174,7 @@ export default {
 			clearTimeout(timeout);
 		}
 
+		const responseTime = Date.now() - startTime;
 		const html = await response.text();
 		const headers = response.headers;
 
@@ -120,19 +199,28 @@ export default {
 
 		if (!headers.get('x-frame-options')) {
 			securityScore -= 25;
-			issues.push({ type: 'Security', message: 'Missing X-Frame-Options header' });
+			issues.push({
+				type: 'Security',
+				message: 'Missing X-Frame-Options header',
+			});
 		}
+
+		const performanceScore = auditPerformance(html, responseTime, issues);
+		const accessibilityScore = auditAccessibility(html, issues);
 
 		return new Response(
 			JSON.stringify({
 				scores: {
 					seo: Math.max(seoScore, 0),
 					security: Math.max(securityScore, 0),
+					performance: performanceScore,
+					accessibility: accessibilityScore,
 				},
 				issues,
 				meta: {
 					status: response.status,
 					htmlSizeKb: Math.round(html.length / 1024),
+					responseTimeMs: responseTime,
 				},
 			}),
 			{
