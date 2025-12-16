@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Audit Tool</title>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Website Audit Tool</h1>
+      <p>Analyze performance, SEO, security & accessibility</p>
+
+      <div class="input-group">
+        <input id="urlInput" type="text" placeholder="https://example.com" />
+        <button id="runAudit">Run Audit</button>
+      </div>
+
+      <section id="results" class="hidden">
+        <h2>Audit Results</h2>
+
+        <div class="scores">
+          <div class="card">
+            <h3>SEO</h3>
+            <p id="seoScore">-</p>
+          </div>
+          <div class="card">
+            <h3>Security</h3>
+            <p id="securityScore">-</p>
+          </div>
+        </div>
+
+        <h3>Issues</h3>
+        <ul id="issuesList"></ul>
+      </section>
+    </main>
+
+    <!-- Vite entry -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

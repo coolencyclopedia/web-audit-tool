@@ -1,0 +1,98 @@
+* {
+  box-sizing: border-box;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.container {
+  max-width: 720px;
+  margin: 80px auto;
+  padding: 24px;
+}
+
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+}
+
+p {
+  color: #9ca3af;
+}
+
+.input-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+input {
+  flex: 1;
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: none;
+}
+
+button {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #38bdf8;
+  color: #020617;
+}
+
+button:hover {
+  background: #0ea5e9;
+}
+
+#results {
+  margin-top: 32px;
+  background: #020617;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.hidden {
+  display: none;
+}
+
+pre {
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+}
+
+.scores {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.card {
+  flex: 1;
+  background: #020617;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.card p {
+  font-size: 2rem;
+  margin: 0;
+  color: #38bdf8;
+}
+
+ul {
+  margin-top: 12px;
+}
+
+li {
+  margin-bottom: 8px;
+  color: #e5e7eb;
+}
