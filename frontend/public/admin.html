@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+  </head>
+  <body>
+    <h1>Audit History</h1>
+
+    <input id="token" placeholder="Admin token" />
+    <button id="load">Load audits</button>
+
+    <pre id="output"></pre>
+
+    <script>
+      document.getElementById("load").onclick = async () => {
+        const token = document.getElementById("token").value;
+        const res = await fetch("/api/admin/audits", {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        });
+
+        const data = await res.json();
+        document.getElementById("output").textContent = JSON.stringify(
+          data,
+          null,
+          2
+        );
+      };
+    </script>
+  </body>
+</html>
