@@ -1,3 +1,7 @@
+function cacheKey(url) {
+	return `audit:${url}`;
+}
+
 function auditPerformance(html, responseTime, issues) {
 	let score = 100;
 
@@ -121,7 +125,7 @@ function isBlockedUrl(url) {
 }
 
 export default {
-	async fetch(request) {
+	async fetch(request, env) {
 		const ip = request.headers.get('cf-connecting-ip') || 'local';
 
 		if (isRateLimited(ip)) {
@@ -155,6 +159,19 @@ export default {
 
 		if (isBlockedUrl(url)) {
 			return new Response(JSON.stringify({ error: 'Blocked URL' }), { status: 403, headers: corsHeaders() });
+		}
+
+		// 🔁 Check KV cache
+		const key = cacheKey(url);
+		const cached = await env.AUDIT_CACHE.get(key, 'json');
+
+		if (cached) {
+			return new Response(JSON.stringify({ ...cached, cached: true }), {
+				headers: {
+					...corsHeaders(),
+					'Content-Type': 'application/json',
+				},
+			});
 		}
 
 		const controller = new AbortController();
@@ -208,27 +225,29 @@ export default {
 		const performanceScore = auditPerformance(html, responseTime, issues);
 		const accessibilityScore = auditAccessibility(html, issues);
 
-		return new Response(
-			JSON.stringify({
-				scores: {
-					seo: Math.max(seoScore, 0),
-					security: Math.max(securityScore, 0),
-					performance: performanceScore,
-					accessibility: accessibilityScore,
-				},
-				issues,
-				meta: {
-					status: response.status,
-					htmlSizeKb: Math.round(html.length / 1024),
-					responseTimeMs: responseTime,
-				},
-			}),
-			{
-				headers: {
-					...corsHeaders(),
-					'Content-Type': 'application/json',
-				},
-			}
-		);
+		const result = {
+			scores: {
+				seo: Math.max(seoScore, 0),
+				security: Math.max(securityScore, 0),
+				performance: performanceScore,
+				accessibility: accessibilityScore,
+			},
+			issues,
+			meta: {
+				status: response.status,
+				htmlSizeKb: Math.round(html.length / 1024),
+				responseTimeMs: responseTime,
+			},
+		};
+
+		// 🧠 Store in KV for 10 minutes
+		await env.AUDIT_CACHE.put(key, JSON.stringify(result), { expirationTtl: 600 });
+
+		return new Response(JSON.stringify({ ...result, cached: false }), {
+			headers: {
+				...corsHeaders(),
+				'Content-Type': 'application/json',
+			},
+		});
 	},
 };
