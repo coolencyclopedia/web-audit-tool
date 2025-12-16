@@ -240,6 +240,34 @@ export default {
 			},
 		};
 
+		// 💾 Save audit to D1 database
+		await env.DB.prepare(
+			`
+			INSERT INTO audits (
+				url,
+				seo,
+				security,
+				performance,
+				accessibility,
+				issues,
+				response_time,
+				cached
+			)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			`
+		)
+			.bind(
+				url,
+				result.scores.seo,
+				result.scores.security,
+				result.scores.performance,
+				result.scores.accessibility,
+				JSON.stringify(result.issues),
+				result.meta.responseTimeMs,
+				result.cached ? 1 : 0
+			)
+			.run();
+
 		// 🧠 Store in KV for 10 minutes
 		await env.AUDIT_CACHE.put(key, JSON.stringify(result), { expirationTtl: 600 });
 
