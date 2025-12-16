@@ -1,5 +1,9 @@
 import "./style.css";
 
+function setRing(el, score) {
+  el.style.strokeDasharray = `${score}, 100`;
+}
+
 const runBtn = document.getElementById("runAudit");
 const urlInput = document.getElementById("urlInput");
 const results = document.getElementById("results");
@@ -7,6 +11,16 @@ const results = document.getElementById("results");
 const seoScoreEl = document.getElementById("seoScore");
 const securityScoreEl = document.getElementById("securityScore");
 const issuesList = document.getElementById("issuesList");
+
+const status = document.getElementById("status");
+
+status.textContent = "Running audit…";
+
+if (data.cached) {
+  status.textContent = "⚡ Served from cache";
+} else {
+  status.textContent = "Fresh audit";
+}
 
 runBtn.addEventListener("click", async () => {
   const url = urlInput.value.trim();
@@ -29,16 +43,16 @@ runBtn.addEventListener("click", async () => {
     seoScoreEl.textContent = data.scores.seo;
     securityScoreEl.textContent = data.scores.security;
 
+    setRing(document.getElementById("seoRing"), data.scores.seo);
+    setRing(document.getElementById("securityRing"), data.scores.security);
+
     issuesList.innerHTML = "";
-    if (data.issues.length === 0) {
-      issuesList.innerHTML = "<li>No issues found 🎉</li>";
-    } else {
-      data.issues.forEach((issue) => {
-        const li = document.createElement("li");
-        li.textContent = `[${issue.type}] ${issue.message}`;
-        issuesList.appendChild(li);
-      });
-    }
+
+    data.issues.forEach((issue) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>${issue.type}</strong>: ${issue.message}`;
+      issuesList.appendChild(li);
+    });
   } catch {
     issuesList.innerHTML = "<li>Audit failed</li>";
   }
