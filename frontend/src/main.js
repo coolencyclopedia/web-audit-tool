@@ -11,25 +11,18 @@ const results = document.getElementById("results");
 const seoScoreEl = document.getElementById("seoScore");
 const securityScoreEl = document.getElementById("securityScore");
 const issuesList = document.getElementById("issuesList");
-
 const status = document.getElementById("status");
-
-status.textContent = "Running audit…";
-
-if (data.cached) {
-  status.textContent = "⚡ Served from cache";
-} else {
-  status.textContent = "Fresh audit";
-}
 
 runBtn.addEventListener("click", async () => {
   const url = urlInput.value.trim();
   if (!url) return alert("Enter a URL");
 
   results.classList.remove("hidden");
-  seoScoreEl.textContent = "...";
-  securityScoreEl.textContent = "...";
-  issuesList.innerHTML = "<li>Running audit...</li>";
+  status.textContent = "Running audit…";
+
+  seoScoreEl.textContent = "–";
+  securityScoreEl.textContent = "–";
+  issuesList.innerHTML = "<li>Running audit…</li>";
 
   try {
     const res = await fetch("/api/audit", {
@@ -46,14 +39,21 @@ runBtn.addEventListener("click", async () => {
     setRing(document.getElementById("seoRing"), data.scores.seo);
     setRing(document.getElementById("securityRing"), data.scores.security);
 
+    status.textContent = data.cached ? "⚡ Served from cache" : "Fresh audit";
+
     issuesList.innerHTML = "";
 
-    data.issues.forEach((issue) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<strong>${issue.type}</strong>: ${issue.message}`;
-      issuesList.appendChild(li);
-    });
+    if (data.issues.length === 0) {
+      issuesList.innerHTML = "<li>No issues found 🎉</li>";
+    } else {
+      data.issues.forEach((issue) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${issue.type}</strong>: ${issue.message}`;
+        issuesList.appendChild(li);
+      });
+    }
   } catch {
+    status.textContent = "Audit failed";
     issuesList.innerHTML = "<li>Audit failed</li>";
   }
 });
