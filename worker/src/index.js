@@ -303,7 +303,7 @@ export default {
 				result.scores.accessibility,
 				JSON.stringify(result.issues),
 				result.meta.responseTimeMs,
-				result.cached ? 1 : 0
+				(result.cached = 0)
 			)
 			.run();
 
