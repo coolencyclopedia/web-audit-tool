@@ -1,3 +1,11 @@
+function isAdmin(request, env) {
+	const auth = request.headers.get('authorization');
+	if (!auth) return false;
+
+	const token = auth.replace('Bearer ', '');
+	return token === env.ADMIN_TOKEN;
+}
+
 function cacheKey(url) {
 	return `audit:${url}`;
 }
@@ -126,6 +134,37 @@ function isBlockedUrl(url) {
 
 export default {
 	async fetch(request, env) {
+		// 🔐 Admin endpoint: fetch audit history
+		if (request.method === 'GET' && new URL(request.url).pathname === '/api/admin/audits') {
+			if (!isAdmin(request, env)) {
+				return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders() });
+			}
+
+			const { results } = await env.DB.prepare(
+				`
+    SELECT
+      id,
+      url,
+      seo,
+      security,
+      performance,
+      accessibility,
+      cached,
+      created_at
+    FROM audits
+    ORDER BY created_at DESC
+    LIMIT 50
+    `
+			).all();
+
+			return new Response(JSON.stringify({ audits: results }), {
+				headers: {
+					...corsHeaders(),
+					'Content-Type': 'application/json',
+				},
+			});
+		}
+
 		const ip = request.headers.get('cf-connecting-ip') || 'local';
 
 		if (isRateLimited(ip)) {
